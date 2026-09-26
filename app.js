@@ -745,8 +745,10 @@ function startPieceDrag(instance,piece,source,event) {
 }
 
 function moveGhost(event) {
-  dragState.lastEvent={clientX:event.clientX,clientY:event.clientY};
-  const rect=playScreen.getBoundingClientRect(); dragGhost.style.left=`${event.clientX-rect.left}px`; dragGhost.style.top=`${event.clientY-rect.top}px`;
+  dragState.lastEvent={clientX:event.clientX,clientY:event.clientY,pointerType:event.pointerType};
+  const rect=playScreen.getBoundingClientRect();
+  const touchOffset=event.pointerType==="touch"?"var(--drag-ghost-offset-x)":"0px";
+  dragGhost.style.left=`calc(${event.clientX-rect.left}px + ${touchOffset})`; dragGhost.style.top=`${event.clientY-rect.top}px`;
   const boardRect=boardZone.getBoundingClientRect();
   const overBoard=event.clientX>=boardRect.left&&event.clientX<=boardRect.right&&event.clientY>=boardRect.top&&event.clientY<=boardRect.bottom;
   boardZone.classList.toggle("is-drop-target",overBoard);
