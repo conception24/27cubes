@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4efe3">
-  <title>27 CUBES v0.9.9</title>
-  <link rel="stylesheet" href="styles.css?v=0.9.9">
-  <link rel="stylesheet" href="cosmic.css?v=0.9.9">
+  <title>27 CUBES v0.10.0</title>
+  <link rel="stylesheet" href="styles.css?v=0.10.0">
+  <link rel="stylesheet" href="cosmic.css?v=0.10.0">
+  <link rel="stylesheet" href="builder.css?v=0.10.0">
 </head>
 <body>
   <main>
@@ -17,7 +18,7 @@
 
     <section class="play-screen" aria-labelledby="playTitle">
       <div class="play-bar">
-        <div><span class="version-label">仕様確認用 v0.9.9</span><h2 id="playTitle">10-1</h2></div>
+        <div><span class="version-label">仕様確認用 v0.10.0</span><h2 id="playTitle">10-1</h2></div>
         <div id="gamePuzzleTabs" class="game-puzzle-tabs" aria-label="問題選択"></div>
         <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">♪ 音 ON</button>
         <button id="reloadBtn" class="reload-button" type="button" aria-label="ブラウザを更新" title="ブラウザを更新">↻</button>
@@ -77,6 +78,18 @@
       <div id="puzzleResults" class="puzzle-results" aria-live="polite"></div>
     </section>
 
+    <details class="builder-tools">
+      <summary>オリジナルピース工房を開く</summary>
+      <section class="builder-panel" aria-labelledby="builderTitle">
+        <header class="builder-intro"><p class="eyebrow">ORIGINAL PIECE DESIGNER</p><h2 id="builderTitle">6つのピースを組み立てる</h2><p>薄いブロックにカーソルを合わせてクリックすると追加できます。コア候補モードでブロックを選ぶと、中心ヒントに印が付きます。</p></header>
+        <div class="builder-workspace">
+          <nav id="builderPieceTabs" class="builder-piece-tabs" aria-label="編集するピース"></nav>
+          <div id="builderStage" class="builder-stage" aria-label="ピースの組み立て場所"></div>
+          <aside class="builder-sidebar"><b id="builderPieceTitle">P01</b><span id="builderPieceCount">2 ブロック</span><label class="core-mode"><input id="coreMode" type="checkbox"> コア候補を選ぶ</label><button id="undoCube" type="button">1つ戻す</button><p id="builderTotal" role="status"></p><button id="copyPieceSet" class="builder-copy" type="button">構成をコピー</button><textarea id="pieceSetJson" readonly aria-label="ピース構成JSON"></textarea><span class="builder-copy-status" role="status"></span></aside>
+        </div>
+      </section>
+    </details>
+
     <details class="legacy-tools">
       <summary>形状確認ツールを開く</summary>
     <section class="viewer-card" aria-label="3Dピースビューア">
@@ -130,8 +143,9 @@
     </details>
   </main>
   <script src="feasibility-worker.js?v=0.9.6"></script>
-  <script src="app.js?v=0.9.9"></script>
-  <script src="cosmic.js?v=0.9.9"></script>
+  <script src="app.js?v=0.10.0"></script>
+  <script src="cosmic.js?v=0.10.0"></script>
+  <script src="builder.js?v=0.10.0"></script>
 </body>
 </html>
 
