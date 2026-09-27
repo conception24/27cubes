@@ -555,7 +555,7 @@ function nearestDrop(event) {
   const occupied=new Set([...manualPlacements.values()].filter(p=>p.instance!==dragState.instance).flatMap(p=>p.cells.map(c=>c.join(','))));
   const rect=boardZone.getBoundingClientRect(), s=parseFloat(getComputedStyle(playScreen).getPropertyValue('--game-cube-size'));
   const matrix=boardOrientation.scale(1.04);
-  let best=null,distance=Infinity;
+  let best=null,distance=Infinity,previous=null,previousDistance=Infinity;
   const max=[0,1,2].map(a=>Math.max(...cells.map(c=>c[a])));
   for(let x=0;x<3-max[0];x++)for(let y=0;y<3-max[1];y++)for(let z=0;z<3-max[2];z++){
     const shifted=cells.map(c=>[c[0]+x,c[1]+y,c[2]+z]);
@@ -563,11 +563,16 @@ function nearestDrop(event) {
     const centroid=[0,1,2].map(a=>shifted.reduce((sum,c)=>sum+c[a],0)/shifted.length);
     const p=matrix.transformPoint({x:(centroid[0]-1)*s,y:(1-centroid[1])*s,z:(centroid[2]-1)*s});
     const k=850/(850-p.z);
-    const px=rect.left+rect.width*.5+p.x*k,py=rect.top+rect.height*.5+(rect.height*.02+p.y)*k;
+    const px=rect.left+rect.width*.5+((gameBoard.offsetLeft??rect.width*.5)-rect.width*.5+p.x)*k;
+    const py=rect.top+rect.height*.5+((gameBoard.offsetTop??rect.height*.52)-rect.height*.5+p.y)*k;
     const d=Math.hypot(event.clientX-px,event.clientY-py);
-    if(d<distance){distance=d;best={instance:dragState.instance,piece:dragState.piece,cells:shifted,orientation:snapped.orientation};}
+    const candidate={instance:dragState.instance,piece:dragState.piece,cells:shifted,orientation:snapped.orientation};
+    if(d<distance){distance=d;best=candidate;}
+    if(dragState.candidate&&JSON.stringify(shifted)===JSON.stringify(dragState.candidate.cells)){previous=candidate;previousDistance=d;}
   }
-  return distance< s*1.4?best:null;
+  const radius=s*(dragState.pointerType==='touch'?2.2:1.6);
+  if(previous&&previousDistance<radius*1.2&&previousDistance<=distance+10)return previous;
+  return distance<radius?best:null;
 }
 
 function gameTone(kind) {
@@ -737,7 +742,7 @@ soundToggle.addEventListener("click",() => { soundOn=!soundOn; soundToggle.setAt
 function startPieceDrag(instance,piece,source,event) {
   const previous=manualPlacements.get(instance);
   const orientation=previous?boardOrientation.multiply(previous.orientation):(gameRotations[instance]||defaultPieceOrientation());
-  dragState={instance,piece,source,pointerId:event.pointerId,orientation:new DOMMatrix(orientation.toString()),candidate:null,lastEvent:event}; activeGamePiece=instance; gameTone("lift");
+  dragState={instance,piece,source,pointerId:event.pointerId,pointerType:event.pointerType,orientation:new DOMMatrix(orientation.toString()),candidate:null,lastEvent:event,rotationPointer:null}; activeGamePiece=instance; gameTone("lift");
   if(source==="board") placedPieces.querySelector(`[data-instance="${instance}"]`)?.classList.add("is-lifting");
   dragGhost.innerHTML=""; const model=document.createElement('div');model.className='ghost-model';
   centered(pieceById[piece].cubes).forEach(([x,y,z])=>{const cube=document.createElement('div');cube.className='cube';applyCubeColors(cube,pieceById[piece].color);cube.style.transform=`translate3d(calc(var(--game-cube-size)*${x-.5}),calc(var(--game-cube-size)*${-y-.5}),calc(var(--game-cube-size)*${z}))`;gameFaces(cube);model.appendChild(cube);});
@@ -747,12 +752,14 @@ function startPieceDrag(instance,piece,source,event) {
 function moveGhost(event) {
   dragState.lastEvent={clientX:event.clientX,clientY:event.clientY,pointerType:event.pointerType};
   const rect=playScreen.getBoundingClientRect();
-  const touchOffset=event.pointerType==="touch"?"var(--drag-ghost-offset-x)":"0px";
-  dragGhost.style.left=`calc(${event.clientX-rect.left}px + ${touchOffset})`; dragGhost.style.top=`${event.clientY-rect.top}px`;
+  const touchOffset=dragState.pointerType==='touch'?(parseFloat(getComputedStyle(playScreen).getPropertyValue('--drag-ghost-offset-x'))||0):0;
+  const point={clientX:event.clientX+touchOffset,clientY:event.clientY};
+  dragGhost.style.left=`${point.clientX-rect.left}px`; dragGhost.style.top=`${point.clientY-rect.top}px`;
+  dragGhost.querySelector('.ghost-model').style.transform=dragState.orientation.toString();
   const boardRect=boardZone.getBoundingClientRect();
-  const overBoard=event.clientX>=boardRect.left&&event.clientX<=boardRect.right&&event.clientY>=boardRect.top&&event.clientY<=boardRect.bottom;
+  const overBoard=point.clientX>=boardRect.left&&point.clientX<=boardRect.right&&point.clientY>=boardRect.top&&point.clientY<=boardRect.bottom;
   boardZone.classList.toggle("is-drop-target",overBoard);
-  dragState.candidate=overBoard?nearestDrop(event):null;
+  dragState.candidate=overBoard?nearestDrop(point):null;
   dragGhost.classList.toggle('has-preview',!!dragState.candidate);
   if(overBoard) renderDropPreview(dragState.instance); else dropPreview.innerHTML="";
 }
@@ -760,28 +767,39 @@ function moveGhost(event) {
 function finishPieceDrag(event) {
   if (!dragState) return;
   moveGhost(event);
-  const boardRect=boardZone.getBoundingClientRect(), trayRect=pieceTray.parentElement.getBoundingClientRect();
-  const onBoard=event.clientX>=boardRect.left&&event.clientX<=boardRect.right&&event.clientY>=boardRect.top&&event.clientY<=boardRect.bottom;
+  const trayRect=pieceTray.parentElement.getBoundingClientRect();
   const onTray=event.clientX>=trayRect.left&&event.clientX<=trayRect.right&&event.clientY>=trayRect.top&&event.clientY<=trayRect.bottom;
-  if (onBoard&&dragState.candidate) {
+  if (dragState.source==='board'&&onTray) {
+    gameRotations[dragState.instance]=dragState.orientation;
+    manualPlacements.delete(dragState.instance);gamePlaced.delete(dragState.instance);
+    gameTone('back');renderGameTray();renderPlacedPieces();checkCompletion();
+  } else if (dragState.candidate) {
     manualPlacements.set(dragState.instance,dragState.candidate);
     gamePlaced.add(dragState.instance); gameTone("snap"); renderGameTray(); renderPlacedPieces(dragState.instance);checkCompletion();
     if(gamePlaced.size===6){ setTimeout(()=>gameTone("done"),160); showGameToast("完成！ 3×3×3"); }
-  } else if (dragState.source==="board"&&onTray) {
-    gameRotations[dragState.instance]=dragState.orientation;
-    manualPlacements.delete(dragState.instance);
-    gamePlaced.delete(dragState.instance); gameTone("back"); renderGameTray(); renderPlacedPieces();checkCompletion();
   } else { gameTone("back"); renderGameTray(); renderPlacedPieces(); }
   dragGhost.classList.remove("is-visible"); dragGhost.innerHTML=""; clearDropPreview(); dragState=null;
 }
 
 playScreen.addEventListener("pointerdown",event => {
+  if(dragState&&event.pointerId!==dragState.pointerId&&event.pointerType==='touch'){
+    if(!dragState.rotationPointer&&event.pointerId!==boardPointerId){
+      event.preventDefault();playScreen.setPointerCapture(event.pointerId);
+      dragState.rotationPointer={id:event.pointerId,x:event.clientX,y:event.clientY};
+    }
+    return;
+  }
   if(pressStart||dragState||event.pointerId===boardPointerId)return;
   const target=event.target.closest(".tray-piece,.placed-group"); if(!target) return;
   event.preventDefault(); playScreen.setPointerCapture(event.pointerId); pressStart={x:event.clientX,y:event.clientY,lastX:event.clientX,lastY:event.clientY,target,instance:target.dataset.instance,piece:gameInstances.find(i=>i.instance===target.dataset.instance)?.piece,source:target.classList.contains("placed-group")?"board":"tray",pointerId:event.pointerId,started:performance.now(),mode:"press"};
-  longPressTimer=setTimeout(()=>{ if(pressStart?.mode==="press") startPieceDrag(pressStart.instance,pressStart.piece,pressStart.source,event); },360);
+  longPressTimer=setTimeout(()=>{ if(pressStart?.mode==="press") startPieceDrag(pressStart.instance,pressStart.piece,pressStart.source,{pointerId:pressStart.pointerId,pointerType:event.pointerType,clientX:pressStart.lastX,clientY:pressStart.lastY}); },360);
 });
 playScreen.addEventListener("pointermove",event => {
+  if(dragState?.rotationPointer?.id===event.pointerId){
+    const p=dragState.rotationPointer;
+    dragState.orientation=screenTurn(dragState.orientation,event.clientX-p.x,event.clientY-p.y);
+    p.x=event.clientX;p.y=event.clientY;moveGhost(dragState.lastEvent);return;
+  }
   if(dragState&&event.pointerId!==dragState.pointerId) return;
   if(pressStart&&event.pointerId!==pressStart.pointerId) return;
   if(dragState){ moveGhost(event); return; }
@@ -795,21 +813,24 @@ playScreen.addEventListener("pointermove",event => {
     if(model) model.style.transform=r.toString();
     updateAlignment();
     pressStart.lastX=event.clientX; pressStart.lastY=event.clientY;
-  } else if(pressStart.source==="board"&&distance>10) {
-    clearTimeout(longPressTimer);
+  } else if(pressStart.source==="board") {
+    pressStart.lastX=event.clientX;pressStart.lastY=event.clientY;
+    // Once selected, a deliberate pull also lifts the piece; finger jitter never cancels the hold.
+    if(activeGamePiece===pressStart.instance&&distance>14){clearTimeout(longPressTimer);startPieceDrag(pressStart.instance,pressStart.piece,'board',event);}
   }
 });
 playScreen.addEventListener("pointerup",event => {
+  if(dragState?.rotationPointer?.id===event.pointerId){dragState.rotationPointer=null;return;}
   if(dragState&&event.pointerId!==dragState.pointerId) return;
   if(pressStart&&event.pointerId!==pressStart.pointerId) return;
   clearTimeout(longPressTimer);
   if(dragState) finishPieceDrag(event); else if(pressStart?.mode==="press") selectGamePiece(pressStart.instance); else if(pressStart?.mode==="turn") gameTone("rotate");
   pressStart=null;
 });
-playScreen.addEventListener("pointercancel",event => { if(event.pointerId!==(dragState?.pointerId??pressStart?.pointerId))return;clearTimeout(longPressTimer); dragState=null;dragGhost.classList.remove('is-visible');clearDropPreview();renderPlacedPieces();pressStart=null; });
+playScreen.addEventListener("pointercancel",event => { if(dragState?.rotationPointer?.id===event.pointerId){dragState.rotationPointer=null;return;}if(event.pointerId!==(dragState?.pointerId??pressStart?.pointerId))return;clearTimeout(longPressTimer); dragState=null;dragGhost.classList.remove('is-visible');clearDropPreview();renderPlacedPieces();pressStart=null; });
 
 boardZone.addEventListener("pointerdown",event => {
-  if(event.target.closest('button')||boardPointerId!==null||(!dragState&&event.target.closest(".placed-group"))) return; boardPointerId=event.pointerId;boardLastX=event.clientX; boardLastY=event.clientY; boardZone.setPointerCapture(event.pointerId);
+  if(dragState||pressStart||event.target.closest('button')||boardPointerId!==null||event.target.closest('.placed-group')) return; boardPointerId=event.pointerId;boardLastX=event.clientX; boardLastY=event.clientY; boardZone.setPointerCapture(event.pointerId);
 });
 boardZone.addEventListener("pointermove",event => {
   if(event.pointerId!==boardPointerId) return;
@@ -822,4 +843,3 @@ boardZone.addEventListener("pointercancel",event=>{if(event.pointerId===boardPoi
 buildBoardFrame();
 gameBoard.style.transform=boardOrientation.scale(1.04).toString();
 loadGamePuzzle(0);
-

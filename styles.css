@@ -5,7 +5,7 @@
   --line: #d8d0bf;
   --accent: #da5b34;
   --cube-size: 48px;
-  --drag-ghost-offset-x: -72px;
+  --drag-ghost-offset-x: -104px;
 }
 
 * { box-sizing: border-box; }
@@ -33,7 +33,7 @@ h2 { font-size: 28px; }
 .lead { max-width: 620px; margin: 18px 0 0; line-height: 1.8; color: #5e594e; }
 
 .play-screen { --game-cube-size:54px; position:relative; overflow:hidden; min-height:560px; margin:22px 0 30px; border-radius:26px; color:#f8f5ea; background:linear-gradient(135deg,#171a1d,#252a2e 62%,#181b1e); box-shadow:0 24px 70px rgba(22,24,25,.28); user-select:none; touch-action:none; }
-.play-screen.is-left-handed { --drag-ghost-offset-x:72px; }
+.play-screen.is-left-handed { --drag-ghost-offset-x:104px; }
 .play-bar { height:68px; display:flex; align-items:center; gap:18px; padding:10px 16px 10px 20px; border-bottom:1px solid rgba(255,255,255,.09); background:rgba(0,0,0,.18); }
 .play-kicker { display:block; color:#f2b91b; font:800 8px/1 ui-monospace,monospace; letter-spacing:.13em; }
 .play-bar h2 { margin-top:3px; color:#fff; font:900 23px/1 ui-monospace,monospace; }
@@ -52,6 +52,8 @@ h2 { font-size: 28px; }
 .board-perspective { position:absolute; z-index:1; inset:0; perspective:850px; }
 .game-board { position:absolute; left:50%; top:52%; width:0; height:0; transform-style:preserve-3d; transform:rotateX(-24deg) rotateY(38deg) scale3d(1.04,1.04,1.04); }
 .board-frame,.placed-pieces { position:absolute; transform-style:preserve-3d; }
+.board-frame,.remaining-cells { pointer-events:none; }
+.placed-group { touch-action:none; cursor:grab; }
 .drop-preview { position:absolute; transform-style:preserve-3d; pointer-events:none; }
 .board-rug { position:absolute; width:calc(var(--game-cube-size)*3.4); height:calc(var(--game-cube-size)*3.4); transform:translate3d(calc(var(--game-cube-size)*-1.7),calc(var(--game-cube-size)*-.19),0px) rotateX(90deg); background:repeating-linear-gradient(45deg,rgba(185,149,82,.16) 0 7px,rgba(165,125,68,.09) 7px 14px); border:2px solid rgba(183,151,81,.65); border-radius:8px; pointer-events:none; backface-visibility:visible; }
 .board-zone.is-drop-target .board-rug { background:repeating-linear-gradient(45deg,rgba(242,185,27,.23) 0 7px,rgba(218,91,52,.14) 7px 14px); box-shadow:0 0 30px rgba(242,185,27,.25); }
@@ -306,4 +308,3 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
   .play-screen .board-actions button { min-height:34px; padding:5px 7px; font-size:9px; }
   .play-screen .tray-model .cube { --cube-size:26px !important; }
 }
-
