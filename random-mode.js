@@ -24,7 +24,7 @@
     stop();active=true;sync();next.disabled=true;summary.textContent='中央コアの解を探索中…';
     const token=revision;
     try{
-      worker=new Worker('random-worker.js?v=0.11.0');
+      worker=new Worker('random-worker.js?v=0.12.0');
       worker.onmessage=({data})=>{
         if(token!==revision)return;
         worker.terminate();worker=null;next.disabled=false;
@@ -32,9 +32,9 @@
         const r=data.result;
         r.pieces.forEach((id,i)=>{pieceById[id].color=palette[i];usage[id]=(usage[id]||0)+1;});
         recent.push(r.pieces.slice().sort().join(','));if(recent.length>10)recent.shift();
-        PUZZLES[randomIndex]={id:'CORE-'+String(++serial).padStart(2,'0'),pieces:r.pieces,coreRule:true,hintSolutions:r.solutions};
+        PUZZLES[randomIndex]={id:'CORE-'+String(++serial).padStart(2,'0'),pieces:r.pieces,coreRule:true,hintSolutions:r.solutions,allSolutions:r.solutions};
         loadGamePuzzle(randomIndex);
-        summary.textContent='新パーツ '+r.specialCount+'/6 · 解 '+r.solutions.length+(r.exhausted?'通り':'通り以上')+'（全体回転を除く） · ★を中央へ';
+        summary.textContent='新パーツ '+r.specialCount+'/6 · 序盤の自由度を優先 · ★を中央へ';
       };
       worker.onerror=()=>{stop();summary.textContent='生成できませんでした。「次のランダム問題」で再試行できます。';};
       worker.postMessage({catalog,maps,usage,recent});

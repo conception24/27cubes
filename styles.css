@@ -344,4 +344,6 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
   .play-screen .play-bar > div:first-child { flex-basis:70px; }
   .play-screen .hint-button { font-size:9px; padding:0 5px; }
 }
+.solution-count { color:#f5db83; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; padding:3px 7px; border-radius:6px; background:#172024d9; pointer-events:none; }
+.solution-count.no-solutions { color:#ff9a91; }
 

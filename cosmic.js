@@ -28,7 +28,7 @@
     playScreen.classList.toggle('cosmic-mode',enabled);
     toggle.setAttribute('aria-pressed',String(enabled));
     toggle.textContent=enabled?'通常版に戻る':'宇宙生命体版を試す';
-    document.querySelector('.version-label').textContent=enabled?'XENO / 27 v0.11.1':'仕様確認用 v0.11.1';
+    document.querySelector('.version-label').textContent=enabled?'XENO / 27 v0.12.0':'仕様確認用 v0.12.0';
     refresh();
   });
   demoButton.addEventListener('click',()=>{demo=!demo;refresh();});

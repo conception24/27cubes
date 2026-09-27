@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4efe3">
-  <title>27 CUBES v0.11.1</title>
-  <link rel="stylesheet" href="styles.css?v=0.11.1">
-  <link rel="stylesheet" href="cosmic.css?v=0.11.1">
-  <link rel="stylesheet" href="builder.css?v=0.11.1">
+  <title>27 CUBES v0.12.0</title>
+  <link rel="stylesheet" href="styles.css?v=0.12.0">
+  <link rel="stylesheet" href="cosmic.css?v=0.12.0">
+  <link rel="stylesheet" href="builder.css?v=0.12.0">
 </head>
 <body>
   <main>
@@ -18,7 +18,7 @@
 
     <section class="play-screen" aria-labelledby="playTitle">
       <div class="play-bar">
-        <div><span class="version-label">仕様確認用 v0.11.1</span><h2 id="playTitle">10-1</h2></div>
+        <div><span class="version-label">仕様確認用 v0.12.0</span><h2 id="playTitle">10-1</h2></div>
         <div id="gamePuzzleTabs" class="game-puzzle-tabs" aria-label="問題選択"></div>
         <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">♪ 音 ON</button>
         <button id="reloadBtn" class="reload-button" type="button" aria-label="ブラウザを更新" title="ブラウザを更新">↻</button>
@@ -29,6 +29,7 @@
           <div class="random-controls">
             <button id="randomModeToggle" type="button" aria-pressed="false">新パーツ問題を試す</button>
             <button id="nextRandom" type="button" hidden>次のランダム問題</button>
+            <output id="solutionCount" class="solution-count" aria-live="polite" title="現在の配置から完成できる解答数／全解答数。立方体全体の回転は同じ解答として数えます。">解答 集計中…</output>
             <span id="randomSummary" class="random-summary" role="status" hidden></span>
             </div>
           <div class="board-actions">
@@ -148,11 +149,12 @@
     </details>
   </main>
   <script src="feasibility-worker.js?v=0.9.6"></script>
-  <script src="special-pieces.js?v=0.11.1"></script>
-  <script src="app.js?v=0.11.1"></script>
-  <script src="cosmic.js?v=0.11.1"></script>
-  <script src="builder.js?v=0.11.1"></script>
-  <script src="random-mode.js?v=0.11.1"></script>
+  <script src="special-pieces.js?v=0.12.0"></script>
+  <script src="app.js?v=0.12.0"></script>
+  <script src="cosmic.js?v=0.12.0"></script>
+  <script src="builder.js?v=0.12.0"></script>
+  <script src="random-mode.js?v=0.12.0"></script>
+  <script src="solution-counter.js?v=0.12.0"></script>
 </body>
 </html>
 
