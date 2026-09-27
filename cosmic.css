@@ -1,0 +1,34 @@
+.cosmic-organism,.cosmic-readout { display:none; }
+.cosmic-mode { background:#060a19; }
+.cosmic-mode .play-bar { background:#090e22; border-color:#263350; }
+.cosmic-mode .hand-zone { background:radial-gradient(ellipse at 65% 30%,#1b2443,transparent 65%),#080d1b; }
+.cosmic-mode .board-zone { background:radial-gradient(ellipse at 55% 48%,#163547 0,transparent 58%),radial-gradient(circle at 15% 23%,#aecfff 0 1px,transparent 2px),radial-gradient(circle at 77% 32%,#9afbe5 0 1px,transparent 2px),radial-gradient(circle at 84% 70%,#becbff 0 1px,transparent 2px),radial-gradient(circle at 33% 81%,#80a0cb 0 1px,transparent 2px),#070d1c; }
+.cosmic-mode .board-zone:not(.is-impossible) .board-rug { border-color:#75e4d5; border-radius:50%; background:repeating-radial-gradient(ellipse,transparent 0 14px,#70e5d514 15px 16px); box-shadow:0 0 25px #76e9df30; }
+.cosmic-mode .frame-cell .face { border-color:#80dace30; background:#78e9df02; }
+.cosmic-mode .tray-model .face,.cosmic-mode .placed-group .face,.cosmic-mode .ghost-model .face { border-radius:18%; border-color:#a9ffff80; background-image:radial-gradient(ellipse at 38% 32%,#ffffffa0,transparent 20%),radial-gradient(ellipse at 65% 75%,#06183180,transparent 70%); animation:cell-breathe 3.6s ease-in-out infinite alternate; }
+.cosmic-mode .tray-slot:nth-child(2n) .face { animation-delay:-1.7s; }
+.cosmic-mode .tray-slot:nth-child(3n) .face { animation-delay:-2.6s; }
+.cosmic-mode .tray-piece::after { color:#8caac1; font-size:9px; letter-spacing:.15em; }
+.cosmic-mode .board-actions button { background:#0d2030e8; border-color:#375366; color:#b0e4e4; }
+.cosmic-mode #cosmicToggle { color:#091e26; background:#8ce8d6; }
+.cosmic-mode .cosmic-readout { display:flex; position:absolute; right:12px; bottom:16px; z-index:7; width:44%; flex-direction:column; gap:7px; pointer-events:none; text-align:right; color:#a4c5d4; font-size:11px; }
+.cosmic-readout strong { font-size:12px; font-weight:500; color:#d5fff3; }
+.cosmic-eyebrow { letter-spacing:.25em; font-size:9px; color:#77b9bc; }
+.cosmic-demo { align-self:flex-end; border:1px solid #4d7e83; border-radius:20px; padding:7px 10px; background:#122534; color:#baf6e7; pointer-events:auto; font-size:10px; touch-action:manipulation; }
+.cosmic-born .cosmic-organism { display:block; position:absolute; width:calc(var(--game-cube-size)*3); height:calc(var(--game-cube-size)*3); left:calc(var(--game-cube-size)*-1.5); top:calc(var(--game-cube-size)*-1.5); --cube-size:calc(var(--game-cube-size)*3); transform-style:preserve-3d; pointer-events:none; }
+.cosmic-skin { position:absolute; inset:0; backface-visibility:hidden; border:1px solid #a2ffe6; border-radius:12%; background:repeating-radial-gradient(ellipse at 50% 50%,transparent 0 13px,#a5f3e640 14px 15px,transparent 16px 23px),radial-gradient(ellipse at 50% 40%,#326d80,#121e39 75%); box-shadow:inset 0 0 25px #6fe8dd60,0 0 15px #6fe8dd30; animation:awaken .9s ease-out,cell-breathe 4s .9s ease-in-out infinite alternate; }
+.cosmic-skin.back,.cosmic-skin.left,.cosmic-skin.bottom { background-color:#161732; }
+.cosmic-eye { position:absolute; inset:35%; border:2px solid #afffec; border-radius:50%; background:radial-gradient(ellipse,#071322 0 22%,#f2ffe9 25% 31%,#6ddacc 35% 58%,#174455 65%); box-shadow:0 0 18px #96ffe6a0; transform:rotate(45deg); }
+.cosmic-skin.top .cosmic-eye,.cosmic-skin.bottom .cosmic-eye { border-radius:15%; }
+.cosmic-demoing .placed-pieces,.cosmic-born .board-frame { visibility:hidden; }
+.show-remaining .cosmic-organism { display:none; }
+@keyframes cell-breathe { from { box-shadow:inset 0 0 5px #9cf9e522; } to { box-shadow:inset 0 0 14px #b5ffe775; } }
+@keyframes awaken { from { opacity:0; } to { opacity:1; } }
+@media (orientation:landscape) and (max-height:600px) {
+  .cosmic-mode .cosmic-readout { bottom:20px; right:9px; width:45%; gap:4px; font-size:9px; }
+  .cosmic-readout strong { font-size:10px; }
+  .cosmic-eyebrow { font-size:8px; }
+  .cosmic-demo { font-size:9px; padding:6px 8px; }
+}
+@media (prefers-reduced-motion:reduce) { .cosmic-mode .face,.cosmic-skin { animation:none !important; } }
+
