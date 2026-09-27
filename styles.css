@@ -329,6 +329,10 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
 .play-screen .tray-piece.is-active { background:none; box-shadow:none; }
 .play-screen .tray-piece.is-active .face { border-color:#fff2a0; }
 .hint-button { flex-shrink:0; min-height:31px; padding:0 8px; border:1px solid #394146; border-radius:7px; background:#202427; color:#eee; font-size:11px; touch-action:manipulation; }
+.play-screen .core-cube .face::after { display:grid; content:'★'; color:#fff7bc; font-size:12px; text-shadow:0 1px 2px #17212c; }
+.board-actions [hidden] { display:none !important; }
+.random-summary { max-width:155px; color:#cee4e6; font-size:9px; line-height:1.5; }
+@media (orientation:landscape) and (max-height:600px) { .core-rule-mode .board-actions { gap:2px; } .core-rule-mode .board-actions button { min-height:27px; padding:3px 6px; } .random-summary { max-width:145px; font-size:8px; } }
 @media (orientation:landscape) and (max-height:600px) {
   .play-screen .tray-model .cube { --cube-size:clamp(18px,8.3dvh,30px) !important; }
   .play-screen .play-bar { flex-wrap:wrap; height:auto; min-height:48px; gap:3px; }

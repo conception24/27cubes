@@ -18,7 +18,7 @@
     playScreen.classList.toggle('cosmic-born',born);
     playScreen.classList.toggle('cosmic-demoing',enabled&&demo);
     shell.style.setProperty('--organism-hue',`${gamePuzzleIndex*38}deg`);
-    progress.textContent=born?`${names[gamePuzzleIndex]}が目覚めた。`:`融合 ${gamePlaced.size} / 6 · 6つのかけらを収めよう`;
+    progress.textContent=born?`${names[gamePuzzleIndex%names.length]}が目覚めた。`:`融合 ${gamePlaced.size} / 6 · 6つのかけらを収めよう`;
     demoButton.textContent=demo?'パズルに戻る':'誕生演出を見る';
     if(born&&!wasBorn){gameTone('done');}
     wasBorn=born;
@@ -28,7 +28,7 @@
     playScreen.classList.toggle('cosmic-mode',enabled);
     toggle.setAttribute('aria-pressed',String(enabled));
     toggle.textContent=enabled?'通常版に戻る':'宇宙生命体版を試す';
-    document.querySelector('.version-label').textContent=enabled?'XENO / 27 v0.10.2':'仕様確認用 v0.10.2';
+    document.querySelector('.version-label').textContent=enabled?'XENO / 27 v0.11.0':'仕様確認用 v0.11.0';
     refresh();
   });
   demoButton.addEventListener('click',()=>{demo=!demo;refresh();});

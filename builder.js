@@ -1,15 +1,8 @@
 (() => {
-  const registeredPieces=[
-    {id:'P01',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0]],coreCandidates:[[1,1,0]]},
-    {id:'P02',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0]],coreCandidates:[[0,1,0]]},
-    {id:'P03',cubes:[[0,1,0],[1,0,0],[1,1,0],[1,2,0]],coreCandidates:[[1,1,0]]},
-    {id:'P04',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,2,0]],coreCandidates:[[0,1,0]]},
-    {id:'P05',cubes:[[0,0,0],[1,0,0],[1,1,0],[2,1,0]],coreCandidates:[[1,0,0]]},
-    {id:'P06',cubes:[[0,0,0],[0,0,1],[0,1,0],[1,0,0]],coreCandidates:[[0,1,0]]}
-  ];
+  const registeredPieces=SPECIAL_PIECES;
   // Keep the previous batch's local storage intact; the new six slots save separately.
-  const storageKey='27cubes-original-piece-drafts-P07-P12-v1',gray='#aab2bd';
-  const initial=()=>Array.from({length:6},(_,i)=>({id:'P'+String(i+7).padStart(2,'0'),cells:[[0,0,0],[1,0,0]],cores:[]}));
+  const storageKey='27cubes-original-piece-drafts-P12-P17-v1',gray='#aab2bd';
+  const initial=()=>Array.from({length:6},(_,i)=>({id:'P'+String(i+12).padStart(2,'0'),cells:[[0,0,0],[1,0,0]],cores:[]}));
   let pieces;
   try{const saved=JSON.parse(localStorage.getItem(storageKey));pieces=Array.isArray(saved)&&saved.length===6?saved:initial();}catch{pieces=initial();}
   pieces.forEach(p=>{p.cores=(p.cores||[]).slice(0,1);delete p.color;});

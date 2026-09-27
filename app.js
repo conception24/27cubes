@@ -262,7 +262,8 @@ function placementMasks(piece) {
     const mins = [0,1,2].map(axis => Math.min(...cells.map(c => c[axis])));
     cells = cells.map(c => c.map((v,axis) => v-mins[axis]));
     cells.sort((a,b) => a[0]-b[0] || a[1]-b[1] || a[2]-b[2]);
-    const key = cells.map(c => c.join(",")).join(";");
+    const coreCells=(piece.coreCandidates||[]).map(rotate).map(c=>c.map((v,a)=>v-mins[a]));
+    const key = cells.map(c => c.join(",")).join(";")+":"+coreCells.map(c=>c.join(",")).join(";");
     if (seenOrientations.has(key)) continue;
     seenOrientations.add(key);
     const maxs = [0,1,2].map(axis => Math.max(...cells.map(c => c[axis])));
@@ -271,7 +272,8 @@ function placementMasks(piece) {
       let mask = 0;
       shifted.forEach(([x,y,z]) => mask |= 1 << (x*9+y*3+z));
       const columns=[[1,0,0],[0,-1,0],[0,0,1]].map(rotate).map(([x,y,z])=>[x,-y,z,0]);
-      placements.push({ mask, cells:shifted, orientation:[...columns.flat(),0,0,0,1] });
+      const coreMask=coreCells.reduce((bits,[x,y,z])=>bits|(1<<((x+dx)*9+(y+dy)*3+z+dz)),0);
+      placements.push({ mask, coreMask, cells:shifted, orientation:[...columns.flat(),0,0,0,1] });
     }
   }
   return placements;
@@ -290,7 +292,7 @@ function solvePuzzle(puzzle, randomize=false) {
     if (!remaining.length) { answer = chosen.slice(); return true; }
     let bestIndex = 0, bestOptions = null;
     for (let i=0;i<remaining.length;i++) {
-      const options = ALL_PLACEMENTS[remaining[i].piece].filter(p => !(p.mask & occupied));
+      const options = ALL_PLACEMENTS[remaining[i].piece].filter(p => !(p.mask & occupied)&&(!puzzle.coreRule||!(p.mask&(1<<13))||(p.coreMask&(1<<13))));
       if (!options.length) return false;
       if (!bestOptions || options.length < bestOptions.length) { bestIndex=i; bestOptions=options; }
     }
@@ -466,10 +468,14 @@ function checkCompletion() {
   feasibilityWorker?.terminate();feasibilityWorker=null;
   clearTimeout(feasibilityTimer);const revision=++feasibilityRevision;
   feasibilityState='checking';updateBoardStatus();
+  const coreRule=!!PUZZLES[gamePuzzleIndex]?.coreRule;
+  if(coreRule&&[...manualPlacements.values()].some(p=>p.cells.some(c=>c.join(',')==='1,1,1')&&!coreCellsForPlacement(p).some(c=>c.join(',')==='1,1,1'))){
+    feasibilityState='impossible';updateBoardStatus();return;
+  }
   let occupied=0;
   for(const placement of manualPlacements.values())for(const [x,y,z] of placement.cells)occupied|=1<<(x*9+y*3+z);
   const pieces=gameInstances.filter(p=>!gamePlaced.has(p.instance)).map(p=>p.piece);
-  const catalog=Object.fromEntries([...new Set(pieces)].map(id=>[id,ALL_PLACEMENTS[id].map(p=>p.mask)]));
+  const catalog=Object.fromEntries([...new Set(pieces)].map(id=>[id,ALL_PLACEMENTS[id].filter(p=>!coreRule||!(p.mask&(1<<13))||(p.coreMask&(1<<13))).map(p=>p.mask)]));
   const fallback=()=>{
     if(revision!==feasibilityRevision)return;
     feasibilityWorker?.terminate();feasibilityWorker=null;clearTimeout(feasibilityTimer);
@@ -618,8 +624,8 @@ function miniPieceModel(pieceId, className="tray-model") {
   const model=document.createElement("div"); model.className=className;
   const piece=pieceById[pieceId];
   const ghost=className==="ghost-model";
-  centered(piece.cubes).forEach(([x,y,z]) => {
-    const cube=document.createElement("div"); cube.className="cube"; applyCubeColors(cube,piece.color);
+  centered(piece.cubes).forEach(([x,y,z],cubeIndex) => {
+    const cube=document.createElement("div"); cube.className="cube"; if((piece.coreCandidates||[]).some(c=>c.join()===piece.cubes[cubeIndex].join()))cube.classList.add("core-cube"); applyCubeColors(cube,piece.color);
     cube.style.transform=ghost
       ? `translate3d(calc(var(--game-cube-size) * ${x} - var(--game-cube-size) / 2),calc(var(--game-cube-size) * ${-y} - var(--game-cube-size) / 2),calc(var(--game-cube-size) * ${z}))`
       : `translate3d(calc(var(--cube-size) * ${x-.5}),calc(var(--cube-size) * ${-y-.5}),calc(var(--cube-size) * ${z}))`;
@@ -668,6 +674,12 @@ function renderGameTray() {
   updateAlignment();
 }
 
+function coreCellsForPlacement(placement){
+  const piece=pieceById[placement.piece];if(!piece.coreCandidates?.length)return [];
+  const transform=c=>{const p=placement.orientation.transformPoint({x:c[0],y:-c[1],z:c[2]});return [Math.round(p.x),Math.round(-p.y),Math.round(p.z)];};
+  const rotated=piece.cubes.map(transform),mins=[0,1,2].map(a=>Math.min(...rotated.map(c=>c[a]))),target=[0,1,2].map(a=>Math.min(...placement.cells.map(c=>c[a])));
+  return piece.coreCandidates.map(transform).map(c=>c.map((v,a)=>v-mins[a]+target[a]));
+}
 function renderPlacedPieces(newInstance=null) {
   placedPieces.innerHTML="";
   if (!gameSolution) return;
@@ -677,6 +689,7 @@ function renderPlacedPieces(newInstance=null) {
     group.dataset.instance=placement.instance; group.dataset.piece=placement.piece;
     placement.cells.forEach(([x,y,z],i) => {
       const cube=document.createElement("div"); cube.className="game-cube"; cube.style.setProperty("--cube-size","var(--game-cube-size)");
+      if(coreCellsForPlacement(placement).some(c=>c.join()===[x,y,z].join()))cube.classList.add("core-cube");
       cube.style.transform=gameTransform(x,y,z); applyCubeColors(cube,pieceById[placement.piece].color); gameFaces(cube,`${placement.instance}-${i+1}`); group.appendChild(cube);
     });
     placedPieces.appendChild(group);
@@ -744,7 +757,8 @@ soundToggle.addEventListener("click",() => { soundOn=!soundOn; soundToggle.setAt
 reloadButton.addEventListener("click",() => window.location.reload());
 document.querySelector('#hintBtn').addEventListener('click',()=>{
   if(dragState||pressStart)return;
-  const result=solvePuzzle(PUZZLES[gamePuzzleIndex],true);
+  const puzzle=PUZZLES[gamePuzzleIndex];
+  const result=puzzle.hintSolutions?{solved:true,placements:puzzle.hintSolutions[Math.floor(Math.random()*puzzle.hintSolutions.length)]}:solvePuzzle(puzzle,true);
   if(!result.solved)return;
   // Every floor cell belongs to a piece; favor pairs with both pieces on the floor.
   const candidates=result.placements.map(p=>({...p,floor:p.cells.filter(c=>c[1]===0).length,tie:Math.random()}));
@@ -774,7 +788,7 @@ function startPieceDrag(instance,piece,source,event) {
   gameTone("lift");
   if(source==="board") placedPieces.querySelector(`[data-instance="${instance}"]`)?.classList.add("is-lifting");
   dragGhost.innerHTML=""; const model=document.createElement('div');model.className='ghost-model';
-  centered(pieceById[piece].cubes).forEach(([x,y,z])=>{const cube=document.createElement('div');cube.className='cube';applyCubeColors(cube,pieceById[piece].color);cube.style.transform=`translate3d(calc(var(--game-cube-size)*${x-.5}),calc(var(--game-cube-size)*${-y-.5}),calc(var(--game-cube-size)*${z}))`;gameFaces(cube);model.appendChild(cube);});
+  centered(pieceById[piece].cubes).forEach(([x,y,z],i)=>{const cube=document.createElement('div');cube.className='cube';if((pieceById[piece].coreCandidates||[]).some(c=>c.join()===pieceById[piece].cubes[i].join()))cube.classList.add('core-cube');applyCubeColors(cube,pieceById[piece].color);cube.style.transform=`translate3d(calc(var(--game-cube-size)*${x-.5}),calc(var(--game-cube-size)*${-y-.5}),calc(var(--game-cube-size)*${z}))`;gameFaces(cube);model.appendChild(cube);});
   model.style.transform=dragState.orientation.toString();dragGhost.appendChild(model); dragGhost.classList.add("is-visible"); moveGhost(event);
 }
 
@@ -807,7 +821,7 @@ function finishPieceDrag(event) {
   } else if (dragState.candidate) {
     manualPlacements.set(dragState.instance,dragState.candidate);
     gamePlaced.add(dragState.instance); activeGamePiece=null;alignmentFocus=null;gameTone("snap"); renderGameTray(); renderPlacedPieces(dragState.instance);checkCompletion();
-    if(gamePlaced.size===6){ setTimeout(()=>gameTone("done"),160); showGameToast("完成！ 3×3×3"); }
+    if(gamePlaced.size===6&&feasibilityState==='possible'){ setTimeout(()=>gameTone("done"),160); showGameToast("完成！ 3×3×3"); }
   } else { gameTone("back"); renderGameTray(); renderPlacedPieces(); }
   dragGhost.classList.remove("is-visible"); dragGhost.innerHTML=""; clearDropPreview(); dragState=null;
 }

@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f4efe3">
-  <title>27 CUBES v0.10.2</title>
-  <link rel="stylesheet" href="styles.css?v=0.10.2">
-  <link rel="stylesheet" href="cosmic.css?v=0.10.2">
-  <link rel="stylesheet" href="builder.css?v=0.10.2">
+  <title>27 CUBES v0.11.0</title>
+  <link rel="stylesheet" href="styles.css?v=0.11.0">
+  <link rel="stylesheet" href="cosmic.css?v=0.11.0">
+  <link rel="stylesheet" href="builder.css?v=0.11.0">
 </head>
 <body>
   <main>
@@ -18,7 +18,7 @@
 
     <section class="play-screen" aria-labelledby="playTitle">
       <div class="play-bar">
-        <div><span class="version-label">仕様確認用 v0.10.2</span><h2 id="playTitle">10-1</h2></div>
+        <div><span class="version-label">仕様確認用 v0.11.0</span><h2 id="playTitle">10-1</h2></div>
         <div id="gamePuzzleTabs" class="game-puzzle-tabs" aria-label="問題選択"></div>
         <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="true">♪ 音 ON</button>
         <button id="reloadBtn" class="reload-button" type="button" aria-label="ブラウザを更新" title="ブラウザを更新">↻</button>
@@ -27,6 +27,9 @@
       <div class="play-field">
         <div id="boardZone" class="board-zone" aria-label="3×3×3配置エリア。ドラッグして回転">
           <div class="board-actions">
+            <button id="randomModeToggle" type="button" aria-pressed="false">新パーツ問題を試す</button>
+            <button id="nextRandom" type="button" hidden>次のランダム問題</button>
+            <span id="randomSummary" class="random-summary" role="status" hidden></span>
             <button id="cosmicToggle" type="button" aria-pressed="false">宇宙生命体版を試す</button>
             <button id="remainingViewBtn" type="button" aria-pressed="false">残り部分を表示</button>
             <button id="frontViewBtn" type="button">すべて正面</button>
@@ -81,7 +84,7 @@
     <details class="builder-tools">
       <summary>オリジナルピース工房を開く</summary>
       <section class="builder-panel" aria-labelledby="builderTitle">
-        <header class="builder-intro"><p class="eyebrow">ORIGINAL PIECE DESIGNER</p><h2 id="builderTitle">新しいピースを追加する（P07〜P12）</h2><p>ブロックの面にカーソルを合わせると追加位置が半透明で表示され、クリックで追加できます。コア候補は各ピース1個。同じブロックをもう一度クリックすると解除できます。</p></header>
+        <header class="builder-intro"><p class="eyebrow">ORIGINAL PIECE DESIGNER</p><h2 id="builderTitle">新しいピースを追加する（P12〜P17）</h2><p>ブロックの面にカーソルを合わせると追加位置が半透明で表示され、クリックで追加できます。コア候補は各ピース1個。同じブロックをもう一度クリックすると解除できます。</p></header>
         <div class="builder-workspace">
           <nav id="builderPieceTabs" class="builder-piece-tabs" aria-label="編集するピース"></nav>
           <div id="builderStage" class="builder-stage" aria-label="ピースの組み立て場所"></div>
@@ -143,9 +146,11 @@
     </details>
   </main>
   <script src="feasibility-worker.js?v=0.9.6"></script>
-  <script src="app.js?v=0.10.2"></script>
-  <script src="cosmic.js?v=0.10.2"></script>
-  <script src="builder.js?v=0.10.2"></script>
+  <script src="special-pieces.js?v=0.11.0"></script>
+  <script src="app.js?v=0.11.0"></script>
+  <script src="cosmic.js?v=0.11.0"></script>
+  <script src="builder.js?v=0.11.0"></script>
+  <script src="random-mode.js?v=0.11.0"></script>
 </body>
 </html>
 
