@@ -226,20 +226,30 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
 }
 
 @media (orientation:landscape) and (max-height:600px) {
+  html,body { width:100%; height:100%; overflow:hidden; overscroll-behavior:none; }
   body { background:#171a1d; }
-  main { width:100%; padding:0; }
+  main { width:100%; height:100dvh; padding:0; overflow:hidden; }
   main > header,.solver-card,.legacy-tools { display:none; }
-  .play-screen { --game-cube-size:44px; min-height:100vh; margin:0; border-radius:0; box-shadow:none; }
-  .play-bar { height:52px; padding:6px 12px; }
-  .play-kicker { display:none; }
-  .play-field { height:calc(100vh - 52px); }
-  .hand-zone { padding:9px; }
-  .hand-heading { margin-bottom:6px; }
-  .piece-tray { gap:5px; }
-  .rotate-pad { margin-top:6px; }
-  .frame-cell,.game-cube { width:44px; height:44px; --cube-size:44px; }
-  .drag-ghost .cube { --cube-size:44px; }
-  .tray-model .cube { --cube-size:18px; }
+  .play-screen { --game-cube-size:38px; position:relative; width:100%; height:100dvh; min-height:0; margin:0; border-radius:0; box-shadow:none; }
+  .play-bar { position:absolute; z-index:10; inset:0 auto auto 0; width:52%; height:48px; gap:4px; padding:4px 6px; overflow:hidden; }
+  .play-bar > div:first-child { flex:0 0 58px; min-width:0; }
+  .version-label { font-size:8px; line-height:1.1; }
+  .play-bar h2 { margin-top:2px; font-size:16px; }
+  .game-puzzle-tabs { flex:0 0 auto; gap:2px; margin-left:0; }
+  .game-puzzle-tabs button,.sound-toggle { min-width:28px; min-height:31px; padding:0 3px; border-radius:7px; font-size:9px; }
+  .sound-toggle { min-width:49px; }
+  .play-field { grid-template-columns:52% 48%; width:100%; height:100%; min-height:0; }
+  .board-zone { min-width:0; }
+  .board-caption,.hand-heading { display:none; }
+  .game-board { top:51%; }
+  .hand-zone { display:block; min-width:0; min-height:0; height:100%; padding:5px; overflow:hidden; }
+  .piece-tray { width:100%; height:100%; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); gap:4px; }
+  .tray-slot { border-radius:10px; }
+  .board-actions { left:5px; bottom:5px; gap:3px; }
+  .board-actions button { min-height:34px; padding:5px 7px; border-radius:8px; font-size:9px; }
+  .frame-cell,.game-cube { width:38px; height:38px; --cube-size:38px; }
+  .drag-ghost .cube { --cube-size:38px; }
+  .tray-model .cube { --cube-size:26px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
