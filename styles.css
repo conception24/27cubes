@@ -311,8 +311,7 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
 
 /* v0.9.7: temporary compact touch controls and gesture-safe tray spacing. */
 .play-screen .turn-arrow { display:none !important; }
-.play-screen .tray-piece.is-dragging-source { opacity:.2 !important; }
-.play-screen .tray-piece.is-dragging-source .tray-model { opacity:.2 !important; }
+.play-screen .tray-piece.is-dragging-source .face { opacity:.22; }
 .play-screen .reload-button { flex:0 0 30px; min-width:30px; min-height:31px; padding:0; border:1px solid #394146; border-radius:7px; color:#d3dadd; background:#202427; font:600 20px/1 system-ui,sans-serif; cursor:pointer; touch-action:manipulation; }
 .play-screen .reload-button:active { background:#343a3e; }
 
@@ -322,5 +321,18 @@ kbd { display:inline-block; min-width:25px; margin-right:3px; padding:1px 5px; b
   .play-screen .tray-model .cube { --cube-size:30px !important; }
   .play-screen .game-puzzle-tabs button,.play-screen .sound-toggle,.play-screen .reload-button { min-height:31px; }
   .play-screen .reload-button { min-width:30px; flex-basis:30px; font-size:19px; }
+}
+
+/* Keep the six touch areas, but remove their visible boxes and clipping. */
+.play-screen .tray-slot { overflow:visible; border:0; border-radius:0; background:none; }
+.play-screen .tray-model { top:50%; }
+.play-screen .tray-piece.is-active { background:none; box-shadow:none; }
+.play-screen .tray-piece.is-active .face { border-color:#fff2a0; }
+.hint-button { flex-shrink:0; min-height:31px; padding:0 8px; border:1px solid #394146; border-radius:7px; background:#202427; color:#eee; font-size:11px; touch-action:manipulation; }
+@media (orientation:landscape) and (max-height:600px) {
+  .play-screen .tray-model .cube { --cube-size:clamp(18px,8.3dvh,30px) !important; }
+  .play-screen .play-bar { flex-wrap:wrap; height:auto; min-height:48px; gap:3px; }
+  .play-screen .play-bar > div:first-child { flex-basis:70px; }
+  .play-screen .hint-button { font-size:9px; padding:0 5px; }
 }
 

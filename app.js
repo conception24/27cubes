@@ -270,14 +270,15 @@ function placementMasks(piece) {
       const shifted = cells.map(([x,y,z]) => [x+dx,y+dy,z+dz]);
       let mask = 0;
       shifted.forEach(([x,y,z]) => mask |= 1 << (x*9+y*3+z));
-      placements.push({ mask, cells:shifted });
+      const columns=[[1,0,0],[0,-1,0],[0,0,1]].map(rotate).map(([x,y,z])=>[x,-y,z,0]);
+      placements.push({ mask, cells:shifted, orientation:[...columns.flat(),0,0,0,1] });
     }
   }
   return placements;
 }
 const ALL_PLACEMENTS = Object.fromEntries(PIECES.map(piece => [piece.id, placementMasks(piece)]));
 
-function solvePuzzle(puzzle) {
+function solvePuzzle(puzzle, randomize=false) {
   const counts = {}, instances = puzzle.pieces.map(id => {
     counts[id] = (counts[id] || 0) + 1;
     return { piece:id, instance:puzzle.pieces.filter(x => x === id).length > 1 ? `${id}#${counts[id]}` : id };
@@ -295,8 +296,9 @@ function solvePuzzle(puzzle) {
     }
     const next = remaining[bestIndex];
     const rest = remaining.slice(0,bestIndex).concat(remaining.slice(bestIndex+1));
+    if(randomize)for(let i=bestOptions.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bestOptions[i],bestOptions[j]]=[bestOptions[j],bestOptions[i]];}
     for (const placement of bestOptions) {
-      chosen.push({ ...next, cells:placement.cells });
+      chosen.push({ ...next, cells:placement.cells, orientation:placement.orientation });
       if (search(rest, occupied | placement.mask, chosen)) return true;
       chosen.pop();
     }
@@ -620,7 +622,7 @@ function miniPieceModel(pieceId, className="tray-model") {
     const cube=document.createElement("div"); cube.className="cube"; applyCubeColors(cube,piece.color);
     cube.style.transform=ghost
       ? `translate3d(calc(var(--game-cube-size) * ${x} - var(--game-cube-size) / 2),calc(var(--game-cube-size) * ${-y} - var(--game-cube-size) / 2),calc(var(--game-cube-size) * ${z}))`
-      : `translate3d(${x*22-11}px,${-y*22-11}px,${z*22}px)`;
+      : `translate3d(calc(var(--cube-size) * ${x-.5}),calc(var(--cube-size) * ${-y-.5}),calc(var(--cube-size) * ${z}))`;
     gameFaces(cube); model.appendChild(cube);
   });
   return model;
@@ -740,6 +742,20 @@ document.querySelectorAll("[data-rotate]").forEach(button => button.addEventList
 }));
 soundToggle.addEventListener("click",() => { soundOn=!soundOn; soundToggle.setAttribute("aria-pressed",String(soundOn)); soundToggle.textContent=soundOn?"♪ 音 ON":"♪ 音 OFF"; if(soundOn) gameTone("tap"); });
 reloadButton.addEventListener("click",() => window.location.reload());
+document.querySelector('#hintBtn').addEventListener('click',()=>{
+  if(dragState||pressStart)return;
+  const result=solvePuzzle(PUZZLES[gamePuzzleIndex],true);
+  if(!result.solved)return;
+  // Every floor cell belongs to a piece; favor pairs with both pieces on the floor.
+  const candidates=result.placements.map(p=>({...p,floor:p.cells.filter(c=>c[1]===0).length,tie:Math.random()}));
+  candidates.sort((a,b)=>b.floor-a.floor||a.tie-b.tie);
+  loadGamePuzzle(gamePuzzleIndex);
+  for(const p of candidates.slice(0,2)){
+    manualPlacements.set(p.instance,{instance:p.instance,piece:p.piece,cells:p.cells,orientation:new DOMMatrix(p.orientation)});
+    gamePlaced.add(p.instance);
+  }
+  renderGameTray();renderPlacedPieces();checkCompletion();gameTone('snap');
+});
 
 function clearGameSelection() {
   if(!activeGamePiece) return;
@@ -804,9 +820,10 @@ playScreen.addEventListener("pointerdown",event => {
     }
     return;
   }
-  if(pressStart||dragState||event.pointerId===boardPointerId)return;
+  if(pressStart||dragState)return;
   const target=event.target.closest(".tray-piece,.placed-group");
   if(!target){clearGameSelection();return;}
+  if(event.pointerId===boardPointerId)return;
   event.preventDefault(); playScreen.setPointerCapture(event.pointerId); pressStart={x:event.clientX,y:event.clientY,lastX:event.clientX,lastY:event.clientY,target,instance:target.dataset.instance,piece:gameInstances.find(i=>i.instance===target.dataset.instance)?.piece,source:target.classList.contains("placed-group")?"board":"tray",pointerId:event.pointerId,started:performance.now(),mode:"press"};
   longPressTimer=setTimeout(()=>{ if(pressStart?.mode==="press") startPieceDrag(pressStart.instance,pressStart.piece,pressStart.source,{pointerId:pressStart.pointerId,pointerType:event.pointerType,clientX:pressStart.lastX,clientY:pressStart.lastY}); },360);
 });
