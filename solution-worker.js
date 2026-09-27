@@ -1,4 +1,4 @@
-importScripts('random-worker.js?v=0.12.0');
+importScripts('random-worker.js?v=0.12.1');
 let expanded=[];
 self.onmessage=({data})=>{
   try{

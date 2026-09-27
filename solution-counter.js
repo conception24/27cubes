@@ -12,7 +12,7 @@
       worker?.terminate();worker=null;puzzleRef=puzzle;total=null;failed=false;
       label.textContent='解答 集計中…';
       try{
-        const next=new Worker('solution-worker.js?v=0.12.0');worker=next;
+        const next=new Worker('solution-worker.js?v=0.12.1');worker=next;
         const fail=()=>{if(worker!==next)return;failed=true;label.textContent='解答数 集計できません';next.terminate();worker=null;};
         next.onmessage=({data})=>{
           if(worker!==next)return;

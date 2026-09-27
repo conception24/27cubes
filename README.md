@@ -14,6 +14,8 @@ Create a Pages project connected to this GitHub repository. Use the production b
 
 ## v0.12.0 — early flexibility and live solution counts
 
+v0.12.1: Random puzzles now always contain exactly three marked special pieces and three distinct unmarked original pieces, totaling 27 cubes. This composition also applies to the single-solution fallback. The central-core requirement, flexibility preference, and exact live counts remain unchanged.
+
 - Random core puzzles fully enumerate solutions for up to 24 candidate sets (a time budget limits work on slower devices), then prefer the highest second-move flexibility. Piece-usage balancing and recent-set avoidance still apply before scoring.
 - Flexibility measures the fraction of non-overlapping, floor-touching second placements that still admit a solution, after a completable floor-touching first placement. It is a puzzle-selection heuristic, not a promise that any two moves will work.
 - The counter shows compatible solution classes / all solution classes. Whole-cube rotations, insertion order, and exchanges of identical unmarked pieces do not create extra solutions. Marked core positions are part of a solution. A class remains compatible if any of its 24 orientations matches every placed piece simultaneously.

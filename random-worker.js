@@ -1,4 +1,4 @@
-if(typeof importScripts==='function')importScripts('solution-math.js?v=0.12.0');
+if(typeof importScripts==='function')importScripts('solution-math.js?v=0.12.1');
 const solutionMath=typeof module!=='undefined'?require('./solution-math.js'):self.solutionMath;
 const CENTER=1<<13,FULL=(1<<27)-1;
 function shuffled(list){const a=list.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -64,7 +64,14 @@ function coreCombinations(catalog){
 function generateCorePuzzle({catalog,maps,usage={},recent=[]}){
   const started=performance.now(),special=catalog.filter(p=>p.special),old=catalog.filter(p=>!p.special);
   const signature=set=>set.map(p=>p.id).sort().join(',');
-  const ranked=coreCombinations(special).map(set=>({set,score:set.reduce((n,p)=>n+(usage[p.id]||0),0)+Math.random()*5+(recent.includes(signature(set))?1000:0)})).sort((a,b)=>a.score-b.score);
+  // Exactly three marked pieces and three distinct unmarked pieces, in every
+  // generation path. Match volumes before doing the more expensive solving.
+  const triples=list=>{const out=[];for(let a=0;a<list.length;a++)for(let b=a+1;b<list.length;b++)for(let c=b+1;c<list.length;c++)out.push([list[a],list[b],list[c]]);return out;};
+  const normalByVolume=new Map();
+  for(const trio of triples(old)){const volume=trio.reduce((n,p)=>n+p.volume,0);if(!normalByVolume.has(volume))normalByVolume.set(volume,[]);normalByVolume.get(volume).push(trio);}
+  const sets=[];
+  for(const trio of triples(special))for(const normal of normalByVolume.get(27-trio.reduce((n,p)=>n+p.volume,0))||[])sets.push(trio.concat(normal));
+  const ranked=sets.map(set=>({set,score:set.reduce((n,p)=>n+(usage[p.id]||0),0)+Math.random()*5+(recent.includes(signature(set))?1000:0)})).sort((a,b)=>a.score-b.score);
   let fallback=null,attempts=0;const candidates=[];
   function attempt(set){
     attempts++;const r=solveCoreSet(set,maps,Infinity,1500);
@@ -82,13 +89,7 @@ function generateCorePuzzle({catalog,maps,usage={},recent=[]}){
     const answer=shuffled(candidates.filter(c=>c.freedom.score>=best*.95))[0];
     return {...answer,attempts,elapsedMs:performance.now()-started};
   }
-  // Prefer all-special output even when only one answer was found.
-  if(fallback)return fallback;
-  for(let n=0;n<160&&performance.now()-started<11000;n++){
-    const set=shuffled(special).slice(0,5).concat(shuffled(old).slice(0,1));
-    if(set.reduce((v,p)=>v+p.volume,0)!==27)continue;
-    attempt(set);if(candidates.length)return candidates[0];
-  }
+  // A single-solution fallback must retain the same three-plus-three rule.
   if(fallback)return fallback;
   throw Error('時間内に問題が見つかりませんでした。もう一度お試しください。');
 }
