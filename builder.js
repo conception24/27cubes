@@ -1,6 +1,15 @@
 (() => {
-  const storageKey='27cubes-original-piece-set-v1',gray='#aab2bd';
-  const initial=()=>Array.from({length:6},(_,i)=>({id:'P'+String(i+1).padStart(2,'0'),cells:[[0,0,0],[1,0,0]],cores:[]}));
+  const registeredPieces=[
+    {id:'P01',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0]],coreCandidates:[[1,1,0]]},
+    {id:'P02',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0]],coreCandidates:[[0,1,0]]},
+    {id:'P03',cubes:[[0,1,0],[1,0,0],[1,1,0],[1,2,0]],coreCandidates:[[1,1,0]]},
+    {id:'P04',cubes:[[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,2,0]],coreCandidates:[[0,1,0]]},
+    {id:'P05',cubes:[[0,0,0],[1,0,0],[1,1,0],[2,1,0]],coreCandidates:[[1,0,0]]},
+    {id:'P06',cubes:[[0,0,0],[0,0,1],[0,1,0],[1,0,0]],coreCandidates:[[0,1,0]]}
+  ];
+  // Keep the previous batch's local storage intact; the new six slots save separately.
+  const storageKey='27cubes-original-piece-drafts-P07-P12-v1',gray='#aab2bd';
+  const initial=()=>Array.from({length:6},(_,i)=>({id:'P'+String(i+7).padStart(2,'0'),cells:[[0,0,0],[1,0,0]],cores:[]}));
   let pieces;
   try{const saved=JSON.parse(localStorage.getItem(storageKey));pieces=Array.isArray(saved)&&saved.length===6?saved:initial();}catch{pieces=initial();}
   pieces.forEach(p=>{p.cores=(p.cores||[]).slice(0,1);delete p.color;});
@@ -84,11 +93,11 @@
   const heading=document.createElement('h3');heading.textContent='既存ピースから取り込む';catalog.appendChild(heading);
   const description=document.createElement('p');description.textContent='クリックすると、選択中の編集枠に形をコピーします。「1つ戻す」で取り消せます。';catalog.appendChild(description);
   const grid=document.createElement('div');grid.className='builder-source-grid';
-  PIECES.forEach(p=>{
+  [...PIECES,...registeredPieces].forEach(p=>{
     const button=document.createElement('button');button.type='button';button.className='builder-source';button.setAttribute('aria-label',p.id+' を編集中のピースにコピー');
     const label=document.createElement('span');label.textContent=p.id+' · '+p.cubes.length;button.appendChild(label);
-    button.appendChild(model(p.cubes,[],22));
-    button.addEventListener('click',()=>{snapshot();pieces[selected]={id:pieces[selected].id,cells:p.cubes.map(c=>c.slice()),cores:[]};save();render();copyStatus.textContent=p.id+' を '+pieces[selected].id+' にコピーしました。';});grid.appendChild(button);
+    button.appendChild(model(p.cubes,p.coreCandidates||[],22));
+    button.addEventListener('click',()=>{snapshot();pieces[selected]={id:pieces[selected].id,cells:p.cubes.map(c=>c.slice()),cores:(p.coreCandidates||[]).map(c=>c.slice())};save();render();copyStatus.textContent=p.id+' を '+pieces[selected].id+' にコピーしました。';});grid.appendChild(button);
   });
   catalog.appendChild(grid);document.querySelector('.builder-panel').appendChild(catalog);
   save();render();
