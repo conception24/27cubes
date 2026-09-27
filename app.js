@@ -757,7 +757,9 @@ function moveGhost(event) {
   dragGhost.style.left=`${point.clientX-rect.left}px`; dragGhost.style.top=`${point.clientY-rect.top}px`;
   dragGhost.querySelector('.ghost-model').style.transform=dragState.orientation.toString();
   const boardRect=boardZone.getBoundingClientRect();
-  const overBoard=point.clientX>=boardRect.left&&point.clientX<=boardRect.right&&point.clientY>=boardRect.top&&point.clientY<=boardRect.bottom;
+  const trayRect=pieceTray.parentElement.getBoundingClientRect();
+  const returning=dragState.source==='board'&&event.clientX>=trayRect.left&&event.clientX<=trayRect.right&&event.clientY>=trayRect.top&&event.clientY<=trayRect.bottom;
+  const overBoard=!returning&&point.clientX>=boardRect.left&&point.clientX<=boardRect.right&&point.clientY>=boardRect.top&&point.clientY<=boardRect.bottom;
   boardZone.classList.toggle("is-drop-target",overBoard);
   dragState.candidate=overBoard?nearestDrop(point):null;
   dragGhost.classList.toggle('has-preview',!!dragState.candidate);
